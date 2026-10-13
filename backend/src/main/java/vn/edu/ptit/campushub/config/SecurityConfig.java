@@ -28,7 +28,10 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health", "/api/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categories", "/api/posts", "/api/posts/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/posts/*/claims", "/api/posts/*/claims/**").authenticated()
+                        .requestMatchers("/api/posts/*/report").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/categories", "/api/posts", "/api/posts/*").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .build();

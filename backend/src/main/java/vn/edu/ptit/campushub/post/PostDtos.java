@@ -43,7 +43,7 @@ public final class PostDtos {
 
     public record PostView(Long id, String title, String content, PostStatus status,
                            CategoryView category, AuthorView author, Instant createdAt, Instant updatedAt,
-                           long reactionCount, long commentCount, boolean reactedByCurrentUser,
+                           long reactionCount, long commentCount, long claimCount, boolean reactedByCurrentUser,
                            List<CommentView> comments) {
     }
 }

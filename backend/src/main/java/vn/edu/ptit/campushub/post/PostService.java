@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.ptit.campushub.category.Category;
 import vn.edu.ptit.campushub.category.CategoryRepository;
+import vn.edu.ptit.campushub.claim.ClaimRequestRepository;
 import vn.edu.ptit.campushub.comment.Comment;
 import vn.edu.ptit.campushub.comment.CommentRepository;
 import vn.edu.ptit.campushub.common.ApiException;
@@ -33,19 +34,22 @@ public class PostService {
     private final UserRepository users;
     private final CommentRepository comments;
     private final ReactionRepository reactions;
+    private final ClaimRequestRepository claimRequests;
 
     public PostService(PostRepository posts, CategoryRepository categories, UserRepository users,
-                       CommentRepository comments, ReactionRepository reactions) {
+                       CommentRepository comments, ReactionRepository reactions,
+                       ClaimRequestRepository claimRequests) {
         this.posts = posts;
         this.categories = categories;
         this.users = users;
         this.comments = comments;
         this.reactions = reactions;
+        this.claimRequests = claimRequests;
     }
 
-    public PageView<PostView> search(String keyword, Long categoryId, int page, int size, Principal principal) {
+    public PageView<PostView> search(String keyword, Long categoryId, PostStatus status, int page, int size, Principal principal) {
         int safeSize = Math.min(Math.max(size, 1), 50);
-        Page<Post> result = posts.searchPublished(keyword == null ? "" : keyword.trim(), categoryId,
+        Page<Post> result = posts.searchPublished(keyword == null ? "" : keyword.trim(), categoryId, status,
                 PageRequest.of(Math.max(page, 0), safeSize, Sort.by(Sort.Direction.DESC, "createdAt")));
         List<PostView> content = result.getContent().stream()
                 .map(post -> toView(post, principal, false))
@@ -128,6 +132,7 @@ public class PostService {
                         post.getAuthor().getDisplayName()),
                 post.getCreatedAt(), post.getUpdatedAt(), reactions.countByPostId(post.getId()),
                 comments.countByPostId(post.getId()),
+                claimRequests.countByPostId(post.getId()),
                 current != null && reactions.findByPostIdAndUserId(post.getId(), current.getId()).isPresent(),
                 commentViews);
     }
